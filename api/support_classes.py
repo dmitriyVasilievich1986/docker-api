@@ -8,7 +8,7 @@ class ReadOnlyOrAdmin(permissions.BasePermission):
         if request.method == "GET":
             return True
 
-        host = environ("KNOX_AUTH_HOST", "http://localhost:8000/auth/accounts/")
+        host = environ.get("KNOX_AUTH_HOST", "http://localhost:8000/auth/accounts/")
         token = request.headers.get("Authorization", "")
         headers = {"Authorization": token}
 
