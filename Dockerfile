@@ -11,6 +11,7 @@ ENV DB_PASSWORD=root
 ENV DB_USER=postgres
 ENV DB_DBNAME=api
 ENV DB_PORT=5432
+ENV DEBUG=False
 
 RUN mkdir /app
 WORKDIR /app

@@ -3,16 +3,20 @@ version: "3.9"
 services:
   db:
     image: postgres
+    restart: always
     environment:
-      - POSTGRES_DB=knox_auth
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=root
-  web:
+      - POSTGRES_PASSWORD=${PASSWORD}
+      - POSTGRES_USER=${USER}
+      - POSTGRES_DB=${DB}
+  api:
     build: .
-    command: python manage.py runserver 0.0.0.0:8100
+    restart: always
     environment:
+      - DB_DBNAME=${DB}
+      - DEBUG=True
       - DB_HOST=db
+      - PORT=${PORT}
     ports:
-      - "8100:8100"
+      - ${PORT}:${PORT}
     depends_on:
       - db
