@@ -13,9 +13,9 @@ services:
     restart: always
     environment:
       - DB_DBNAME=${DB}
+      - PORT=${PORT}
       - DEBUG=True
       - DB_HOST=db
-      - PORT=${PORT}
     ports:
       - ${PORT}:${PORT}
     depends_on:
