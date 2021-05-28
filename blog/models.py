@@ -21,7 +21,7 @@ class Blog(models.Model):
 
     @property
     def get_parent(self, *args, **kwargs):
-        if self.parent is None:
+        if self.catalog is None:
             return [{"name": self.name, "title": self.title}]
         payload = [
             {
