@@ -18,3 +18,15 @@ class Blog(models.Model):
         blank=True,
         null=True,
     )
+
+    @property
+    def get_parent(self, *args, **kwargs):
+        if self.parent is None:
+            return [{"name": self.name, "title": self.title}]
+        payload = [
+            {
+                "name": self.name,
+                "title": self.title,
+            }
+        ] + self.parent.get_parent
+        return payload
