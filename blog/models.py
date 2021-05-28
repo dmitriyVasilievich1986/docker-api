@@ -28,5 +28,5 @@ class Blog(models.Model):
                 "name": self.name,
                 "title": self.title,
             }
-        ] + self.parent.get_parent
+        ] + self.catalog.get_parent
         return payload

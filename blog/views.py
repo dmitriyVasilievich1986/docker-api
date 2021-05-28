@@ -15,7 +15,7 @@ class BlogViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         context = serializer.data
         context["is_liked"] = request.user in instance.likes.all()
-        context["get_comments"] = instance.get_comments
+        # context["get_comments"] = instance.get_comments
         context["get_parent"] = instance.get_parent
         return response.Response(context)
 
