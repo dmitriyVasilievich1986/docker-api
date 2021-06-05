@@ -1,4 +1,3 @@
-from api.settings import DATABASES
 from django.core.management import execute_from_command_line
 from os import environ
 from time import sleep
@@ -39,6 +38,9 @@ while MAX_ATTEMPTS:
         logger.info("Connected successfully")
         break
     except psycopg2.OperationalError as err:
+        logger.error(err)
+        MAX_ATTEMPTS -= 1
+    except Exception as err:
         logger.error(err)
         MAX_ATTEMPTS -= 1
     MAX_ATTEMPTS and sleep(ATTEMPT_DELAY)
