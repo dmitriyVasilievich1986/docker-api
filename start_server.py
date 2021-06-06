@@ -15,7 +15,7 @@ DB_USER: str = environ.get("DB_USER", "postgres")
 DB_NAME: str = environ.get("DB_DBNAME", "astra")
 
 HOST: str = environ.get("HOST", "localhost")
-PORT: int = environ.get("PORT", 8000)
+PORT: int = environ.get("PORT", 80)
 
 DB_HOST: str = environ.get("DB_HOST", "localhost")
 DB_PORT: int = environ.get("DB_PORT", 5432)

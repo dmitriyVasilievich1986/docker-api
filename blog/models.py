@@ -1,6 +1,6 @@
-from django.db import models
-from django.contrib.auth.models import User
 from catalog.models import Catalog
+from django.db import models
+from user.models import User
 
 
 class Blog(models.Model):
@@ -30,3 +30,7 @@ class Blog(models.Model):
             }
         ] + self.catalog.get_parent
         return payload
+
+    @property
+    def get_likes_count(self):
+        return self.likes.count()

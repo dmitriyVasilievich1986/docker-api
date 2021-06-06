@@ -1,7 +1,12 @@
-from rest_framework import viewsets, response, decorators, permissions
-from api.support_classes import ReadOnlyOrAdmin
+from api.support_classes import (
+    ReadOnlyOrAdmin,
+    AuthenticatedUser,
+    get_user_from_by_code,
+)
+from rest_framework import viewsets, response, decorators, permissions, serializers
 from django.shortcuts import get_object_or_404
 from .serializer import BlogSerializer
+from user.models import User
 from .models import Blog
 
 
@@ -20,18 +25,24 @@ class BlogViewSet(viewsets.ModelViewSet):
         return response.Response(context)
 
     @decorators.action(
-        detail=True,
+        permission_classes=[permissions.AllowAny],
         methods=["POST"],
-        permission_classes=[permissions.IsAuthenticated],
+        detail=True,
     )
     def likes(self, request, pk=None, *args, **kwargs):
         instance = get_object_or_404(klass=Blog, name=pk)
+        r = get_user_from_by_code(request)
+        if r.status_code >= 300:
+            raise serializers.ValidationError(detail=r.text)
+        user = User.objects.filter(id=r.json()["id"]).first()
 
-        is_liked = request.user in instance.likes.all()
+        is_liked = user in instance.likes.all()
         if is_liked:
-            instance.likes.remove(request.user)
+            instance.likes.remove(user)
         else:
-            instance.likes.add(request.user)
+            instance.likes.add(user) if user else instance.likes.create(
+                id=r.json()["id"]
+            )
 
         context = {
             "likes": instance.get_likes_count,
@@ -40,8 +51,8 @@ class BlogViewSet(viewsets.ModelViewSet):
         return response.Response(context)
 
     @decorators.action(
-        detail=True,
         methods=["GET"],
+        detail=True,
     )
     def get_by_name(self, request, pk=None, *args, **kwargs):
         instance = get_object_or_404(klass=Blog, name=pk)

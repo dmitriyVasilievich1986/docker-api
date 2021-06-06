@@ -9,7 +9,7 @@ ENV KNOX_AUTH_HOST=http://localhost:8000/auth/accounts/
 ENV DB_HOST=192.168.1.62
 ENV DB_PASSWORD=root
 ENV DB_USER=postgres
-ENV DB_DBNAME=api
+ENV DB_DBNAME=astra
 ENV DB_PORT=5432
 ENV DEBUG=False
 
