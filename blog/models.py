@@ -6,9 +6,9 @@ from user.models import User
 class Blog(models.Model):
     title = models.CharField(max_length=150, unique=True)
     name = models.CharField(max_length=150, unique=True)
-    created_at = models.DateField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     text = models.TextField(blank=True, null=True)
-    updated_at = models.DateField(auto_now=True)
 
     likes = models.ManyToManyField(to=User, related_name="likes")
     views = models.ManyToManyField(to=User, related_name="views")

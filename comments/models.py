@@ -4,6 +4,8 @@ from blog.models import Blog
 
 
 class Comments(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     text = models.TextField(blank=True, null=True)
 
     user = models.ForeignKey(
