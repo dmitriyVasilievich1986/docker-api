@@ -9,12 +9,13 @@ from rest_framework import (
 from api.support_classes import ReadOnlyOrAdmin, get_user_by_token
 from django.shortcuts import get_object_or_404
 from .serializer import CommentsSerializer
+from blog.models import Blog
 from .models import Comments
 
 
-# import logging
+import logging
 
-# logger = logging.getLogger("api")
+logger = logging.getLogger("api")
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
@@ -49,7 +50,7 @@ class CommentsViewSet(viewsets.ModelViewSet):
         # message2.save()
         # user.received_messages.add(message2)
         # user.save()
-        blog = serializer.get_blog
+        blog = Blog.objects.get(id=serializer.data["get_blog"])
         # context = {
         #     "user": user and user.username or "anonymus",
         #     "text": request.data["text"],
