@@ -19,8 +19,7 @@ class BlogViewSet(viewsets.ModelViewSet):
     serializer_class = BlogSerializer
     queryset = Blog.objects.all()
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
+    def _get_blog(self, request, instance, *args, **kwargs):
         user = get_user_by_token(request, raise_error=False)
         serializer = self.get_serializer(instance)
 
@@ -32,6 +31,18 @@ class BlogViewSet(viewsets.ModelViewSet):
         if user and user not in instance.views.all():
             instance.views.add(user)
         return response.Response(context)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        return self._get_blog(request, instance)
+
+    @decorators.action(
+        methods=["GET"],
+        detail=True,
+    )
+    def get_by_name(self, request, pk=None, *args, **kwargs):
+        instance = get_object_or_404(klass=Blog, name=pk)
+        return self._get_blog(request, instance)
 
     @decorators.action(
         permission_classes=[permissions.AllowAny],
@@ -50,17 +61,4 @@ class BlogViewSet(viewsets.ModelViewSet):
             "likes": instance.get_likes_count,
             "is_liked": not is_liked,
         }
-        return response.Response(context)
-
-    @decorators.action(
-        methods=["GET"],
-        detail=True,
-    )
-    def get_by_name(self, request, pk=None, *args, **kwargs):
-        instance = get_object_or_404(klass=Blog, name=pk)
-        serializer = self.get_serializer(instance)
-        context = serializer.data
-        context["is_liked"] = request.user in instance.likes.all()
-        context["comments"] = instance.get_comments
-        context["get_parent"] = instance.get_parent
         return response.Response(context)

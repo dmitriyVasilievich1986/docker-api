@@ -49,13 +49,14 @@ class CommentsViewSet(viewsets.ModelViewSet):
         # message2.save()
         # user.received_messages.add(message2)
         # user.save()
-        context = {
-            "user": user and user.username or "anonymus",
-            "text": request.data["text"],
-        }
+        blog = serializer.get_blog
+        # context = {
+        #     "user": user and user.username or "anonymus",
+        #     "text": request.data["text"],
+        # }
         headers = self.get_success_headers(serializer.data)
         return response.Response(
-            context, status=status.HTTP_201_CREATED, headers=headers
+            blog.get_comments, status=status.HTTP_201_CREATED, headers=headers
         )
 
     def destroy(self, request, *args, **kwargs):
