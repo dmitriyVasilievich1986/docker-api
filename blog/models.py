@@ -9,7 +9,9 @@ class Blog(models.Model):
     created_at = models.DateField(auto_now_add=True)
     text = models.TextField(blank=True, null=True)
     updated_at = models.DateField(auto_now=True)
-    likes = models.ManyToManyField(to=User)
+
+    likes = models.ManyToManyField(to=User, related_name="likes")
+    views = models.ManyToManyField(to=User, related_name="views")
 
     catalog = models.ForeignKey(
         on_delete=models.CASCADE,
@@ -34,3 +36,18 @@ class Blog(models.Model):
     @property
     def get_likes_count(self):
         return self.likes.count()
+
+    @property
+    def get_view_count(self):
+        return self.views.count()
+
+    @property
+    def get_comments(self):
+        output = list()
+        for comment in self.comments.all():
+            output.append(comment.get_child)
+        return output
+
+    @property
+    def comments_count(self):
+        return sum([x.count for x in self.comments.all()]) if self.comments else 0

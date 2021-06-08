@@ -1,7 +1,7 @@
 from api.support_classes import (
     ReadOnlyOrAdmin,
     AuthenticatedUser,
-    get_user_from_by_code,
+    get_user_by_token,
 )
 from rest_framework import viewsets, response, decorators, permissions, serializers
 from django.shortcuts import get_object_or_404
@@ -9,19 +9,28 @@ from .serializer import BlogSerializer
 from user.models import User
 from .models import Blog
 
+# import logging
+
+# logger = logging.getLogger("api")
+
 
 class BlogViewSet(viewsets.ModelViewSet):
+    permission_classes = [ReadOnlyOrAdmin]
     serializer_class = BlogSerializer
     queryset = Blog.objects.all()
-    permission_classes = [ReadOnlyOrAdmin]
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
+        user = get_user_by_token(request, raise_error=False)
         serializer = self.get_serializer(instance)
+
         context = serializer.data
-        context["is_liked"] = request.user in instance.likes.all()
-        # context["get_comments"] = instance.get_comments
+        context["is_liked"] = user in instance.likes.all()
+        context["comments"] = instance.get_comments
         context["get_parent"] = instance.get_parent
+
+        if user and user not in instance.views.all():
+            instance.views.add(user)
         return response.Response(context)
 
     @decorators.action(
@@ -30,19 +39,12 @@ class BlogViewSet(viewsets.ModelViewSet):
         detail=True,
     )
     def likes(self, request, pk=None, *args, **kwargs):
+
         instance = get_object_or_404(klass=Blog, name=pk)
-        r = get_user_from_by_code(request)
-        if r.status_code >= 300:
-            raise serializers.ValidationError(detail=r.text)
-        user = User.objects.filter(id=r.json()["id"]).first()
+        user = get_user_by_token(request)
 
         is_liked = user in instance.likes.all()
-        if is_liked:
-            instance.likes.remove(user)
-        else:
-            instance.likes.add(user) if user else instance.likes.create(
-                id=r.json()["id"]
-            )
+        instance.likes.remove(user) if is_liked else instance.likes.add(user)
 
         context = {
             "likes": instance.get_likes_count,
@@ -59,6 +61,6 @@ class BlogViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         context = serializer.data
         context["is_liked"] = request.user in instance.likes.all()
-        # context["get_comments"] = instance.get_comments
+        context["comments"] = instance.get_comments
         context["get_parent"] = instance.get_parent
         return response.Response(context)

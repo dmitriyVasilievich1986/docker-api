@@ -12,10 +12,16 @@ class BlogSerializer(serializers.ModelSerializer):
             "title",
             "created_at",
             "updated_at",
+            "comments_count",
+            "get_view_count",
+            "get_likes_count",
         )
         read_only_fields = (
             "id",
             "created_at",
+            "comments_count",
+            "get_view_count",
+            "get_likes_count",
         )
 
     def update(self, instance, validated_data, *args, **kwargs):
