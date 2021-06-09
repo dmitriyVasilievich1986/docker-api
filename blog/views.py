@@ -50,7 +50,7 @@ class BlogViewSet(viewsets.ModelViewSet):
         methods=["GET"],
         detail=True,
     )
-    def name(self, request, pk=None, *args, **kwargs):
+    def by_name(self, request, pk=None, *args, **kwargs):
         instance = get_object_or_404(klass=Blog, name=pk)
         return self._get_blog(request, instance)
 
@@ -104,10 +104,13 @@ class BlogViewSet(viewsets.ModelViewSet):
         blog_reverse = Blog.objects.all()[::-1]
         blogs = [
             {
-                "id": x.id,
+                "get_likes_count": x.get_likes_count,
+                "get_view_count": x.get_view_count,
+                "comments_count": x.comments_count,
+                "title": x.title,
                 "text": x.text,
                 "name": x.name,
-                "title": x.title,
+                "id": x.id,
             }
             for x in blog_reverse[start:end]
         ]
