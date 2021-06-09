@@ -3,7 +3,15 @@ from api.support_classes import (
     AuthenticatedUser,
     get_user_by_token,
 )
-from rest_framework import viewsets, response, decorators, permissions, serializers
+from rest_framework import (
+    viewsets,
+    response,
+    decorators,
+    permissions,
+    serializers,
+    exceptions,
+)
+from django.contrib.postgres.search import SearchVector
 from django.shortcuts import get_object_or_404
 from .serializer import BlogSerializer
 from user.models import User
@@ -12,6 +20,8 @@ from .models import Blog
 # import logging
 
 # logger = logging.getLogger("api")
+
+PAGE_LENGTH = 5
 
 
 class BlogViewSet(viewsets.ModelViewSet):
@@ -40,7 +50,7 @@ class BlogViewSet(viewsets.ModelViewSet):
         methods=["GET"],
         detail=True,
     )
-    def get_by_name(self, request, pk=None, *args, **kwargs):
+    def name(self, request, pk=None, *args, **kwargs):
         instance = get_object_or_404(klass=Blog, name=pk)
         return self._get_blog(request, instance)
 
@@ -62,3 +72,48 @@ class BlogViewSet(viewsets.ModelViewSet):
             "is_liked": not is_liked,
         }
         return response.Response(context)
+
+    @decorators.action(
+        permission_classes=[permissions.AllowAny],
+        methods=["POST"],
+        detail=False,
+    )
+    def search(self, request, *args, **kwargs):
+        tags = request.data.get("tags", "")
+        search_vector = SearchVector("text", config="russian")
+        search = Blog.objects.annotate(search=search_vector).filter(search=tags)
+        if search is None:
+            raise exceptions.NotFound()
+        result = [{"id": x.id, "name": x.name, "title": x.title} for x in search.all()]
+        return response.Response(result)
+
+    @decorators.action(
+        permission_classes=[permissions.AllowAny],
+        methods=["POST"],
+        detail=False,
+    )
+    def page(self, request, *args, **kwargs):
+        pk = request.data.get("page")
+        if pk is None or not isinstance(pk, int):
+            raise exceptions.NotFound()
+        length = Blog.objects.count()
+        start = max(0, pk * PAGE_LENGTH)
+        end = min(length, pk * PAGE_LENGTH + PAGE_LENGTH)
+        if start >= length:
+            raise exceptions.NotFound()
+        blog_reverse = Blog.objects.all()[::-1]
+        blogs = [
+            {
+                "id": x.id,
+                "text": x.text,
+                "name": x.name,
+                "title": x.title,
+            }
+            for x in blog_reverse[start:end]
+        ]
+        result = {
+            "blogs": blogs,
+            "page": pk,
+            "pages": length // PAGE_LENGTH,
+        }
+        return response.Response(result)
