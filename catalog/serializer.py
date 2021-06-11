@@ -6,9 +6,11 @@ class CatalogSerializer(serializers.ModelSerializer):
     class Meta:
         model = Catalog
         fields = (
+            "id",
             "name",
             "title",
         )
+        read_only_fields = ("id",)
 
     def update(self, instance, validated_data):
         instance.parent = validated_data.get("parent", instance.parent)

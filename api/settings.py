@@ -2,10 +2,8 @@ from pathlib import Path
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = os.environ.get(
-    "SECRET", "5y3ac=5ok-_*%2e3zfyq(49+9h66+6_%%2x&yz%q7e8#(#=#2y"
-)
 DEBUG = os.environ.get("DEBUG", "") == "True"
+SECRET_KEY = os.environ["SECRET"]
 ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
@@ -55,11 +53,11 @@ WSGI_APPLICATION = "api.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
         "PASSWORD": os.environ.get("DB_PASSWORD", "root"),
         "NAME": os.environ.get("DB_DBNAME", "postgres"),
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "USER": os.environ.get("DB_USER", "postgres"),
+        "ENGINE": "django.db.backends.postgresql",
         "PORT": os.environ.get("DB_PORT", 5432),
     }
 }
