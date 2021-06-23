@@ -1,4 +1,4 @@
-from api.support_classes import ReadOnlyOrAdmin, get_user_by_token
+from api.support_classes import ReadOnlyOrAdmin, AllowAny
 from django.contrib.postgres.search import SearchVector
 from django.shortcuts import get_object_or_404
 from .serializer import BlogSerializer
@@ -53,14 +53,13 @@ class BlogViewSet(viewsets.ModelViewSet):
         return self._get_blog(request, instance)
 
     @decorators.action(
-        permission_classes=[permissions.AllowAny],
+        permission_classes=[AllowAny],
         methods=["POST"],
         detail=True,
     )
     def likes(self, request, pk=None, *args, **kwargs):
-
         instance = get_object_or_404(klass=Blog, name=pk)
-        user = get_user_by_token(request)
+        user = request.user
 
         is_liked = user in instance.likes.all()
         instance.likes.remove(user) if is_liked else instance.likes.add(user)

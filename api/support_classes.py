@@ -19,7 +19,15 @@ class ReadOnlyOrAdmin(permissions.BasePermission):
 class AuthenticatedUser(permissions.BasePermission):
     def has_permission(self, request, view, *args, **kwargs):
         user = get_user_by_token(request)
+        request.user = user
         return user is not None
+
+        
+class AllowAny(permissions.BasePermission):
+    def has_permission(self, request, view, *args, **kwargs):
+        user = get_user_by_token(request)
+        request.user = user
+        return True
 
 
 def get_user_by_token(request, raise_error=True):
