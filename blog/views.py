@@ -2,16 +2,14 @@ from api.support_classes import ReadOnlyOrAdmin, AllowAny
 from django.contrib.postgres.search import SearchVector
 from django.shortcuts import get_object_or_404
 from .serializer import BlogSerializer
-from user.models import User
 from .models import Blog
 
 from rest_framework import (
-    viewsets,
-    response,
-    decorators,
     permissions,
-    serializers,
+    decorators,
     exceptions,
+    response,
+    viewsets,
 )
 
 import logging
