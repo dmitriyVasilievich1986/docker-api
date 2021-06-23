@@ -1,8 +1,10 @@
-from api.support_classes import (
-    ReadOnlyOrAdmin,
-    AuthenticatedUser,
-    get_user_by_token,
-)
+from api.support_classes import ReadOnlyOrAdmin, get_user_by_token
+from django.contrib.postgres.search import SearchVector
+from django.shortcuts import get_object_or_404
+from .serializer import BlogSerializer
+from user.models import User
+from .models import Blog
+
 from rest_framework import (
     viewsets,
     response,
@@ -11,15 +13,11 @@ from rest_framework import (
     serializers,
     exceptions,
 )
-from django.contrib.postgres.search import SearchVector
-from django.shortcuts import get_object_or_404
-from .serializer import BlogSerializer
-from user.models import User
-from .models import Blog
 
-# import logging
+import logging
 
-# logger = logging.getLogger("api")
+logger: logging.Logger = logging.getLogger("api")
+
 
 PAGE_LENGTH = 5
 
@@ -30,7 +28,7 @@ class BlogViewSet(viewsets.ModelViewSet):
     queryset = Blog.objects.all()
 
     def _get_blog(self, request, instance, *args, **kwargs):
-        user = get_user_by_token(request, raise_error=False)
+        user = request.user
         serializer = self.get_serializer(instance)
 
         context = serializer.data

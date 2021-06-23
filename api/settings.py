@@ -6,6 +6,34 @@ DEBUG = os.environ.get("DEBUG", "") == "True"
 SECRET_KEY = os.environ["SECRET"]
 ALLOWED_HOSTS = ["*"]
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname}: [{asctime}] {module} ["{message}"]',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'show_full': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'api': {
+            'handlers': ['show_full'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+    },
+}
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
