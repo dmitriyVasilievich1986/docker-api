@@ -10,12 +10,27 @@ class CatalogViewSet(viewsets.ModelViewSet):
     queryset = Catalog.objects.all()
     permission_classes = [ReadOnlyOrAdmin]
 
+    def _get_catalog(self, instance, *args, **kwargs):
+        serializer = self.get_serializer(instance)
+        payload = {
+            **serializer.data,
+            "catalog": instance.get_child,
+            "parent": instance.get_parent[1:][::-1],
+        }
+        return payload
+
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        context = serializer.data
-        context["get_child"] = instance.get_child
-        context["get_parent"] = instance.get_parent
+        context = self._get_catalog(instance)
+        return response.Response(context)
+
+    @decorators.action(
+        detail=True,
+        methods=["GET"],
+    )
+    def by_name(self, request, pk=None, *args, **kwargs):
+        instance = get_object_or_404(klass=Catalog, name=pk)
+        context = self._get_catalog(instance)
         return response.Response(context)
 
     def update(self, request, *args, **kwargs):
@@ -24,15 +39,3 @@ class CatalogViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return response.Response(serializer.data)
-
-    @decorators.action(
-        detail=True,
-        methods=["GET"],
-    )
-    def by_name(self, request, pk=None, *args, **kwargs):
-        instance = get_object_or_404(klass=Catalog, name=pk)
-        serializer = self.get_serializer(instance)
-        context = serializer.data
-        context["get_child"] = instance.get_child
-        context["get_parent"] = instance.get_parent
-        return response.Response(context)

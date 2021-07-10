@@ -29,10 +29,12 @@ class BlogViewSet(viewsets.ModelViewSet):
         user = request.user
         serializer = self.get_serializer(instance)
 
-        context = serializer.data
-        context["is_liked"] = user in instance.likes.all()
-        context["comments"] = instance.get_comments
-        context["get_parent"] = instance.get_parent
+        context = {
+            **serializer.data,
+            "is_liked": user in instance.likes.all(),
+            "comments": instance.get_comments,
+            "parent": instance.parent[1:][::-1],
+        }
 
         if user and user not in instance.views.all():
             instance.views.add(user)
@@ -89,29 +91,27 @@ class BlogViewSet(viewsets.ModelViewSet):
     )
     def page(self, request, *args, **kwargs):
         pk = request.data.get("page")
+        page_length = request.data.get("page_length", PAGE_LENGTH)
+
         if pk is None or not isinstance(pk, int):
             raise exceptions.NotFound()
+
         length = Blog.objects.count()
-        start = max(0, pk * PAGE_LENGTH)
-        end = min(length, pk * PAGE_LENGTH + PAGE_LENGTH)
-        if start >= length:
+        start = max(0, length - pk * page_length - page_length)
+        end = min(length, length - pk * page_length)
+
+        if start == end:
             raise exceptions.NotFound()
-        blog_reverse = Blog.objects.all()[::-1]
-        blogs = [
-            {
-                "get_likes_count": x.get_likes_count,
-                "get_view_count": x.get_view_count,
-                "comments_count": x.comments_count,
-                "title": x.title,
-                "text": x.text,
-                "name": x.name,
-                "id": x.id,
-            }
-            for x in blog_reverse[start:end]
-        ]
+
+        blog_reverse = Blog.objects.all()[start:end][::-1]
+        blogs = [self.get_serializer(x).data for x in blog_reverse]
         result = {
             "blogs": blogs,
             "page": pk,
-            "pages": length // PAGE_LENGTH,
+            "page_length": page_length,
+            "pages": length // page_length,
         }
+
+        logger.debug(str(result))
+
         return response.Response(result)

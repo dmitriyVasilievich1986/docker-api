@@ -2,3 +2,5 @@
 .env
 scripts
 nginx
+__pycache__
+*.pyc
