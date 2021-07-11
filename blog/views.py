@@ -65,7 +65,7 @@ class BlogViewSet(viewsets.ModelViewSet):
         instance.likes.remove(user) if is_liked else instance.likes.add(user)
 
         context = {
-            "likes": instance.get_likes_count,
+            "likes": instance.likes_count,
             "is_liked": not is_liked,
         }
         return response.Response(context)
